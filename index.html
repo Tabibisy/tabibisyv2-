@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>القصة السريرية الذكية</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/dark.css" rel="stylesheet" id="darkTheme" disabled>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<header>
+    <h1>القصة السريرية الذكية</h1>
+    <button id="toggleTheme">🌗</button>
+    <span id="connStatus">جاري التحقق...</span>
+</header>
+
+<div id="progressBar"><div></div></div>
+
+<form id="storyForm">
+    <!-- الأقسام تُملأ ديناميكياً عبر JS -->
+</form>
+
+<div id="controls">
+    <button id="prevBtn" disabled>السابق</button>
+    <button id="nextBtn">التالي</button>
+    <button id="finishBtn" class="hidden">إنهاء القصة</button>
+</div>
+
+<!-- زر العلامات الحيوية -->
+<button id="vitalsBtn" class="fab">🩺</button>
+
+<!-- نافذة العلامات الحيوية -->
+<dialog id="vitalsModal">
+    <h3>العلامات الحيوية</h3>
+    <label>درجة الحرارة (°C)<input type="number" step="0.1" id="temp"></label>
+    <label>ضغط الدم收缩ي/انبساطي<input type="text" id="bp" placeholder="مثلاً 120/80"></label>
+    <label>النبض<input type="number" id="pulse"></label>
+    <label>إشباع الأكسجين (%)<input type="number" id="spo2" max="100"></label>
+    <label>معدل التنفس<input type="number" id="rr"></label>
+    <button id="saveVitals">حفظ</button>
+    <button id="closeVitals">إغلاق</button>
+</dialog>
+
+<!-- نافذة الدردشة -->
+<button id="chatFab" class="fab" style="bottom:90px;">💬</button>
+<dialog id="chatModal">
+    <h3>دردشة مع Gemini</h3>
+    <div id="chatBox"></div>
+    <input type="text" id="chatInput" placeholder="اكتب سؤالك...">
+    <button id="sendChat">إرسال</button>
+    <button id="closeChat">إغلاق</button>
+</dialog>
+
+<!-- صفحة التقرير -->
+<section id="reportPage" class="hidden">
+    <h2>التقرير السريري</h2>
+    <div id="reportContent"></div>
+    <button id="downloadPdf">تنزيل PDF</button>
+</section>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
