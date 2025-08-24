@@ -2,65 +2,555 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>القصة السريرية الذكية</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="css/style.css" rel="stylesheet">
-    <link href="css/dark.css" rel="stylesheet" id="darkTheme" disabled>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التحليل الطبي بالذكاء الاصطناعي</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        :root {
+            --primary: #2b5f87;
+            --secondary: #4a8db7;
+            --accent: #e74c3c;
+            --lab-accent: #9b59b6;
+            --light: #f0f7ff;
+            --dark: #1a3c5a;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        header h1 {
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light);
+        }
+        
+        .upload-area:hover {
+            border-color: var(--secondary);
+            background: #e8f4ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--secondary);
+            background: #e8f4ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-types {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .file-name {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .analysis-type {
+            margin: 25px 0;
+        }
+        
+        .analysis-type h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+        }
+        
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .radio-item {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .radio-item.xray {
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .radio-item.ct {
+            border-left: 4px solid var(--accent);
+        }
+        
+        .radio-item.mri {
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .radio-item.ecg {
+            border-left: 4px solid #f39c12;
+        }
+        
+        .radio-item.lab {
+            border-left: 4px solid var(--lab-accent);
+        }
+        
+        .radio-item:hover {
+            background: #e1f0ff;
+        }
+        
+        .radio-item.selected {
+            border-color: var(--secondary);
+            background: #e1f0ff;
+        }
+        
+        .radio-item input {
+            margin-left: 5px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #response {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+            border-right: 5px solid var(--secondary);
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .response-title {
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .analysis-content {
+            line-height: 1.8;
+        }
+        
+        .analysis-content h4 {
+            margin: 15px 0 8px 0;
+            color: var(--primary);
+        }
+        
+        .analysis-content ul {
+            padding-right: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .analysis-content li {
+            margin-bottom: 5px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--secondary);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 24px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-    <h1>القصة السريرية الذكية</h1>
-    <button id="toggleTheme">🌗</button>
-    <span id="connStatus">جاري التحقق...</span>
-</header>
+    <div class="container">
+        <header>
+            <h1>نظام التحليل الطبي بالذكاء الاصطناعي</h1>
+            <p>قم بتحميل الصور الطبية أو نتائج التحاليل للحصول على تحليل مفصل باستخدام أحدث تقنيات الذكاء الاصطناعي</p>
+        </header>
+        
+        <div class="content">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <p>انقر لتحميل الصورة أو اسحبها وأفلتها هنا</p>
+                    <p class="file-types">(JPEG, PNG, DICOM, PDF)</p>
+                    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.dicom,.dcm,.pdf" />
+                </div>
+                
+                <div class="file-name" id="fileName"></div>
+            </div>
+            
+            <div class="analysis-type">
+                <h3>اختر نوع التحليل المطلوب:</h3>
+                <div class="radio-group">
+                    <label class="radio-item xray">
+                        <input type="radio" name="analysisType" value="xray" checked>
+                        أشعة X-Ray (عادية)
+                    </label>
+                    <label class="radio-item ct">
+                        <input type="radio" name="analysisType" value="ct">
+                        أشعة مقطعية (CT Scan)
+                    </label>
+                    <label class="radio-item mri">
+                        <input type="radio" name="analysisType" value="mri">
+                        رنين مغناطيسي (MRI)
+                    </label>
+                    <label class="radio-item ecg">
+                        <input type="radio" name="analysisType" value="ecg">
+                        تخطيط القلب (ECG)
+                    </label>
+                    <label class="radio-item lab">
+                        <input type="radio" name="analysisType" value="lab">
+                        تحاليل مخبرية
+                    </label>
+                </div>
+            </div>
+            
+            <button id="analyzeBtn">بدء التحليل</button>
+            
+            <div id="response">
+                <div class="response-header">
+                    <div class="response-title">نتيجة التحليل</div>
+                </div>
+                <div class="analysis-content" id="analysisResult"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>هذا النظام مصمم للمساعدة في التحليل الأولي ولا يغني عن استشارة الطبيب المتخصص</p>
+        </footer>
+    </div>
 
-<div id="progressBar"><div></div></div>
+    <script>
+        // عناصر DOM
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileName = document.getElementById('fileName');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const response = document.getElementById('response');
+        const analysisResult = document.getElementById('analysisResult');
+        const radioItems = document.querySelectorAll('.radio-item');
+        
+        // متغيرات التطبيق
+        let uploadedFile = null;
+        
+        // تهيئة التطبيق
+        function initApp() {
+            // إضافة مستمعي الأحداث
+            fileInput.addEventListener('change', handleFileSelect);
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleDrop);
+            uploadArea.addEventListener('click', () => fileInput.click());
+            analyzeBtn.addEventListener('click', analyzeImage);
+            
+            // تحديد نوع التحليل
+            radioItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    radioItems.forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    const radioInput = item.querySelector('input');
+                    radioInput.checked = true;
+                });
+            });
+            
+            // تحديد أول عنصر افتراضيًا
+            radioItems[0].classList.add('selected');
+        }
+        
+        // معالجة اختيار الملف
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            processFile(file);
+        }
+        
+        // معالجة سحب الملف وإفلاته
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            processFile(file);
+        }
+        
+        // معالجة الملف بعد اختياره
+        function processFile(file) {
+            if (file) {
+                // التحقق من نوع الملف
+                const validTypes = ['image/jpeg', 'image/png', 'application/dicom', 'application/pdf'];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const validExtensions = ['jpg', 'jpeg', 'png', 'dicom', 'dcm', 'pdf'];
+                
+                if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+                    alert('نوع الملف غير مدعوم. الرجاء تحميل صورة JPEG أو PNG أو DICOM أو PDF.');
+                    return;
+                }
+                
+                uploadedFile = file;
+                fileName.textContent = `تم اختيار: ${file.name}`;
+                fileName.style.display = 'block';
+                analyzeBtn.disabled = false;
+            }
+        }
+        
+        // إزالة تأثير السحب عند مغادرة المنطقة
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        // تحليل الصورة
+        async function analyzeImage() {
+            if (!uploadedFile) {
+                alert('يرجى اختيار ملف أولاً');
+                return;
+            }
 
-<form id="storyForm">
-    <!-- الأقسام تُملأ ديناميكياً عبر JS -->
-</form>
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'جاري التحليل...';
+            response.style.display = 'block';
+            
+            // عرض مؤشر التحميل
+            analysisResult.innerHTML = `
+                <div class="loading">
+                    <span>جاري معالجة البيانات وتحليلها...</span>
+                    <div class="spinner"></div>
+                </div>
+            `;
 
-<div id="controls">
-    <button id="prevBtn" disabled>السابق</button>
-    <button id="nextBtn">التالي</button>
-    <button id="finishBtn" class="hidden">إنهاء القصة</button>
-</div>
+            try {
+                // الحصول على نوع التحليل المحدد
+                const selectedAnalysis = document.querySelector('input[name="analysisType"]:checked').value;
+                
+                // رفع الملف إلى Puter
+                const fileExtension = uploadedFile.name.split('.').pop();
+                const puterFile = await puter.fs.write(`medical_data_${Date.now()}.${fileExtension}`, uploadedFile);
+                const uploadedPath = puterFile.path;
 
-<!-- زر العلامات الحيوية -->
-<button id="vitalsBtn" class="fab">🩺</button>
+                // إنشاء الـ prompt المناسب حسب نوع التحليل
+                let promptText = '';
+                
+                switch(selectedAnalysis) {
+    case 'xray':
+        promptText = 'حلل صورة الأشعة السينية التالية وكأنك أخصائي أشعة متمرس. اتبع خطوات دقيقة: (1) صف الصورة من الناحية التقنية وجودتها، (2) حدد البنى التشريحية المرئية، (3) اذكر أي علامات غير طبيعية مثل الكسور، التكلسات، التهابات، أو تشوهات، (4) قدّم استنتاجاً طبياً منظمًا، (5) أنهِ بتوصية سريرية مبدئية مع التنويه بأن القرار النهائي يعود للطبيب المعالج.';
+        break;
+    case 'ct':
+        promptText = 'قم بتحليل صورة الأشعة المقطعية بدقة وكأنك استشاري أشعة. اعمل بالخطوات: (1) صف نوعية الصورة والمستوى المقطعي، (2) حدد الهياكل الطبيعية، (3) ابحث عن أي أورام، نزيف، إصابات، أو تشوهات، (4) اربط الملاحظات بتفسير سريري، (5) اختم باستنتاج شامل وتوصية بمتابعة الحالة مع الطبيب المختص.';
+        break;
+    case 'mri':
+        promptText = 'حلل صورة الرنين المغناطيسي بعناية تامة كاختصاصي أشعة. التزم بالتالي: (1) صف جودة وتتابعات التصوير، (2) عرّف البنى الطبيعية المرئية، (3) ابحث عن علامات غير طبيعية مثل إصابات الأربطة، التهابات، أورام، أو تشوهات، (4) قدّم تفسيراً سريرياً واضحاً، (5) اختتم باستنتاج منظم مع توصية للمتابعة الطبية التخصصية.';
+        break;
+    case 'ecg':
+        promptText = 'قم بتحليل تخطيط القلب (ECG) بدقة كطبيب قلب. اتبع الخطوات: (1) تحقق من معدل النبض والإيقاع، (2) حلل الموجات P و QRS و T، (3) ابحث عن أي علامات لاضطراب نظم، احتشاء، تضخم، أو مشاكل توصيل كهربائي، (4) قدم استنتاجاً طبياً منظماً، (5) اختم بتوصية لمراجعة الطبيب المختص لتأكيد النتائج.';
+        break;
+    case 'lab':
+        promptText = 'قم بتحليل نتائج التحاليل المخبرية كطبيب مختبر متخصص. اتبع الآتي: (1) اعرض كل فحص وقيمته مقارنة بالمعدل المرجعي، (2) أبرز القيم غير الطبيعية، (3) فسّر الدلالات المحتملة للانحرافات (مثل فقر الدم، العدوى، خلل وظائف الكبد أو الكلى)، (4) اربط النتائج بسياق سريري محتمل، (5) اختم بتوصية واضحة بمراجعة الطبيب المعالج لتكامل التشخيص.';
+        break;
+}
 
-<!-- نافذة العلامات الحيوية -->
-<dialog id="vitalsModal">
-    <h3>العلامات الحيوية</h3>
-    <label>درجة الحرارة (°C)<input type="number" step="0.1" id="temp"></label>
-    <label>ضغط الدم收缩ي/انبساطي<input type="text" id="bp" placeholder="مثلاً 120/80"></label>
-    <label>النبض<input type="number" id="pulse"></label>
-    <label>إشباع الأكسجين (%)<input type="number" id="spo2" max="100"></label>
-    <label>معدل التنفس<input type="number" id="rr"></label>
-    <button id="saveVitals">حفظ</button>
-    <button id="closeVitals">إغلاق</button>
-</dialog>
+                // تحليل البيانات باستخدام الذكاء الاصطناعي
+                const completion = await puter.ai.chat([
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'file',
+                                puter_path: uploadedPath
+                            },
+                            {
+                                type: 'text',
+                                text: promptText
+                            }
+                        ]
+                    }
+                ], { model: 'gpt-5', stream: true });
 
-<!-- نافذة الدردشة -->
-<button id="chatFab" class="fab" style="bottom:90px;">💬</button>
-<dialog id="chatModal">
-    <h3>دردشة مع Gemini</h3>
-    <div id="chatBox"></div>
-    <input type="text" id="chatInput" placeholder="اكتب سؤالك...">
-    <button id="sendChat">إرسال</button>
-    <button id="closeChat">إغلاق</button>
-</dialog>
+                let text = '';
 
-<!-- صفحة التقرير -->
-<section id="reportPage" class="hidden">
-    <h2>التقرير السريري</h2>
-    <div id="reportContent"></div>
-    <button id="downloadPdf">تنزيل PDF</button>
-</section>
+                // عرض النتيجة
+                for await (const part of completion) {
+                    if (part?.text) {
+                        text += part.text;
+                        analysisResult.innerHTML = formatAnalysisText(text);
+                    }
+                }
 
-<script type="module" src="js/app.js"></script>
+                // تنظيف الملف المؤقت
+                await puter.fs.delete(uploadedPath);
+
+            } catch (error) {
+                analysisResult.innerHTML = `<strong>خطأ:</strong><br>${error.message}`;
+            }
+
+            analyzeBtn.disabled = false;
+            analyzeBtn.textContent = 'بدء التحليل';
+        }
+        
+        // تنسيق نص التحليل
+        function formatAnalysisText(text) {
+            // تحويل النص إلى فقرات وعناصر منظمة
+            const sections = text.split(/\n\n+/);
+            let formattedHTML = '';
+            
+            sections.forEach(section => {
+                if (section.trim() !== '') {
+                    // إذا كان العنوان الرئيسي
+                    if (section.includes(':')) {
+                        const parts = section.split(':');
+                        formattedHTML += `<h4>${parts[0]}:</h4><p>${parts.slice(1).join(':')}</p>`;
+                    } 
+                    // إذا كانت قائمة
+                    else if (section.includes('-')) {
+                        const items = section.split('\n').filter(item => item.trim().startsWith('-'));
+                        if (items.length > 0) {
+                            formattedHTML += '<ul>';
+                            items.forEach(item => {
+                                formattedHTML += `<li>${item.replace('-', '').trim()}</li>`;
+                            });
+                            formattedHTML += '</ul>';
+                        } else {
+                            formattedHTML += `<p>${section}</p>`;
+                        }
+                    } 
+                    // إذا كان فقرة عادية
+                    else {
+                        formattedHTML += `<p>${section}</p>`;
+                    }
+                }
+            });
+            
+            return formattedHTML;
+        }
+        
+        // تهيئة التطبيق عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
