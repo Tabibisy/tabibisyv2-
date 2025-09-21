@@ -1,216 +1,90 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>مولّد وصفة طبية — مساعد ذكي</title>
+  <meta charset="utf-8">
+  <title>مولّد وصفة طبية — مع إرسال PDF للبوت</title>
   <script src="https://js.puter.com/v2/"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-    body {font-family:'Tajawal',sans-serif;background:#f5f7fb;margin:0;color:#111827;}
-    .wrap{max-width:980px;margin:28px auto;padding:16px;}
-    .card{background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-bottom:16px;overflow:hidden;}
-    h1{margin:0 0 10px;font-size:20px;color:#1e88e5;}
-    h2{margin:0 0 10px;font-size:16px;color:#0f172a;}
-    .grid{display:grid;gap:12px;}
-    .cols-2{grid-template-columns:1fr 1fr;}
-    label{display:block;font-size:13px;margin-bottom:6px;color:#0f172a;}
-    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;box-sizing:border-box;}
-    textarea{min-height:80px;resize:vertical;}
-    .row{display:flex;gap:12px;flex-wrap:wrap;}
-    .btn{padding:10px 16px;background:#1e88e5;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;}
-    .btn.secondary{background:#374151;}
-    .muted{color:#6b7280;font-size:13px;}
-    .notice{background:#fff7ed;border-left:4px solid #f59e0b;padding:10px;border-radius:6px;color:#92400e;font-size:13px;margin-top:10px;}
-    .danger{background:#fff0f0;border-left:4px solid #ef4444;color:#b91c1c;padding:10px;border-radius:6px;font-size:13px;margin-top:10px;}
-    pre{white-space:pre-wrap;background:#0f172a;color:#f8fafc;padding:12px;border-radius:8px;font-size:13px;overflow:auto;}
-    .spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(0,0,0,0.08);border-top-color:#1e88e5;border-radius:50%;animation:spin 1s linear infinite;margin-left:6px;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* 📊 جدول الوصفة */
-    .table-container{overflow-x:auto;}
-    .rx-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 14px;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .rx-table th {
-      background: #1e88e5;
-      color: #fff;
-      padding: 10px;
-      text-align: center;
-      font-size: 15px;
-    }
-    .rx-table td {
-      padding: 10px;
-      border: 1px solid #e5e7eb;
-      vertical-align: top;
-    }
-    .rx-table tr:nth-child(even) {
-      background: #f9fafb;
-    }
-    .conf-high { color: #16a34a; font-weight: bold; }
-    .conf-moderate { color: #f97316; font-weight: bold; }
-    .conf-low { color: #dc2626; font-weight: bold; }
+    body {font-family: sans-serif; background:#f5f7fb; margin:0; padding:20px;}
+    .card {background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.1); margin-bottom:16px;}
+    button {padding:10px 16px; border:none; border-radius:8px; font-weight:600; cursor:pointer;}
+    .btn {background:#1e88e5; color:#fff;}
+    .btn.secondary {background:#374151; color:#fff;}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>مولّد وصفة طبية — مساعدة ذكية</h1>
-      <p class="muted">هذه الأداة تولّد <strong>مسودة وصفة</strong> يجب مراجعتها واعتمادها من قبل الطبيب.</p>
+  <div class="card">
+    <h2>📄 مسودة الوصفة</h2>
+    <div id="rxTableArea">
+      <!-- هنا يجي الجدول اللي يولده السكربت -->
+      <table border="1" width="100%" cellpadding="8">
+        <tr><th>💊 الدواء</th><th>الشكل</th><th>الجرعة</th></tr>
+        <tr><td>Amoxicillin</td><td>Tablet</td><td>500 mg</td></tr>
+        <tr><td>Paracetamol</td><td>Tablet</td><td>500 mg</td></tr>
+      </table>
     </div>
-
-    <!-- إدخال بيانات المريض -->
-    <div class="card">
-      <h2>بيانات المريض</h2>
-      <div class="grid cols-2">
-        <div><label>العمر *</label><input id="p_age" type="number" min="0"></div>
-        <div><label>الوزن (كغ)</label><input id="p_weight" type="number" min="0"></div>
-      </div>
-      <div class="grid cols-2" style="margin-top:12px;">
-        <div>
-          <label>الجنس *</label>
-          <select id="p_gender">
-            <option value="">اختر</option><option value="Male">ذكر</option><option value="Female">أنثى</option>
-          </select>
-        </div>
-        <div>
-          <label>حالات خاصة</label>
-          <select id="p_status">
-            <option value="">لا شيء</option><option value="pregnant">حامل</option><option value="breastfeeding">مرضع</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid" style="margin-top:12px;">
-        <div><label>أمراض مزمنة</label><input id="p_conditions" type="text"></div>
-        <div><label>تحسس دوائي</label><input id="p_allergy" type="text"></div>
-        <div><label>الأدوية الحالية</label><textarea id="p_current"></textarea></div>
-      </div>
-    </div>
-
-    <!-- التشخيص -->
-    <div class="card">
-      <h2>التشخيص / سبب العلاج</h2>
-      <textarea id="p_diagnosis"></textarea>
-      <div class="row" style="margin-top:12px;">
-        <button id="generateBtn" class="btn">🚀 توليد وصفة</button>
-        <button id="clearBtn" class="btn secondary" type="button">مسح الحقول</button>
-        <div id="status" style="margin-left:auto;align-self:center;"></div>
-      </div>
-      <div class="notice">⚠️ هذه النتيجة مسودة — يجب مراجعتها من قبل الطبيب.</div>
-    </div>
-
-    <!-- الوصفة -->
-    <div id="rxCard" class="card" style="display:none;">
-      <h2>📄 مسودة الوصفة</h2>
-      <div id="rxMeta" class="muted"></div>
-      <div class="table-container" id="rxTableArea"></div>
-      <div id="rxRaw" style="display:none;margin-top:10px;"></div>
-      <div class="row" style="margin-top:12px;">
-        <button id="copyRx" class="btn">📋 نسخ</button>
-        <button id="printRx" class="btn secondary">🖨️ طباعة</button>
-      </div>
-      <div id="rxWarning" class="danger" style="display:none;">⚠️ هذه الوصفة للاستخدام الأكاديمي فقط ويجب مراجعتها طبياً.</div>
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <button id="downloadPDF" class="btn">📥 تنزيل PDF</button>
+      <button id="sendToBot" class="btn secondary">📤 إرسال PDF للبوت</button>
     </div>
   </div>
 
   <script>
-    const genBtn=document.getElementById("generateBtn");
-    const statusEl=document.getElementById("status");
-    const rxCard=document.getElementById("rxCard");
-    const rxTableArea=document.getElementById("rxTableArea");
-    const rxRaw=document.getElementById("rxRaw");
-    const rxMeta=document.getElementById("rxMeta");
-    const copyRx=document.getElementById("copyRx");
-    const printRx=document.getElementById("printRx");
+  const tg = window.Telegram.WebApp;
+  tg.expand();
 
-    function setStatus(on,msg="جاري التحليل..."){
-      statusEl.innerHTML=on?`<span class="spinner"></span> ${msg}`:"";
-      genBtn.disabled=on;
-    }
-
-    document.getElementById("clearBtn").onclick=()=>{document.querySelectorAll("input,textarea,select").forEach(el=>el.value="");rxCard.style.display="none";};
-
-    genBtn.onclick=async()=>{
-      const age=document.getElementById("p_age").value.trim();
-      const gender=document.getElementById("p_gender").value;
-      const diagnosis=document.getElementById("p_diagnosis").value.trim();
-      if(!age||!gender||!diagnosis){alert("⚠️ يرجى إدخال العمر، الجنس والتشخيص");return;}
-
-      setStatus(true);
-      rxCard.style.display="block";
-      rxTableArea.innerHTML="<p>⏳ جاري التوليد...</p>";
-      rxRaw.style.display="none";
-
-      const weight=document.getElementById("p_weight").value.trim();
-      const status=document.getElementById("p_status").value;
-      const conditions=document.getElementById("p_conditions").value.trim();
-      const allergy=document.getElementById("p_allergy").value.trim();
-      const current=document.getElementById("p_current").value.trim();
-
-      const prompt=`أنت مساعد طبي. أعطني فقط JSON لمصفوفة أدوية.
-[
- { "name":"اسم الدواء","trade_name":"","form":"","dose":"","frequency":"","duration":"","instructions":"","confidence":"High/Moderate/Low" }
-]
-بيانات المريض: العمر:${age}، الوزن:${weight||"غير محدد"}، الجنس:${gender}، حالة:${status||"لا"}، أمراض:${conditions||"لا"}، تحسس:${allergy||"لا"}، أدوية:${current||"لا"}، التشخيص:${diagnosis}`;
-
-      try{
-        const completion=await puter.ai.chat([{role:"user",content:prompt}],{model:"gpt-5"});
-        let raw="";
-        if(completion?.message?.content){raw=completion.message.content;}
-        else if(completion?.output_text){raw=completion.output_text;}
-        else{raw=JSON.stringify(completion);}
-        const match=raw.match(/\[.*\]/s);
-        let meds=null;
-        if(match){try{meds=JSON.parse(match[0]);}catch{}}
-
-        if(Array.isArray(meds)){
-          rxMeta.textContent="✅ تم التوليد — راجعها طبيبياً";
-          rxTableArea.innerHTML=renderTable(meds);
-          rxRaw.style.display="none";
-          copyRx.dataset.json=JSON.stringify(meds,null,2);
-        }else{
-          rxMeta.textContent="⚠️ النموذج لم يُرجع JSON صالح — عرض النص الخام:";
-          rxTableArea.innerHTML="";
-          rxRaw.style.display="block";
-          rxRaw.innerHTML="<pre>"+escapeHtml(raw)+"</pre>";
-        }
-      }catch(e){
-        rxMeta.textContent="⚠️ خطأ: "+e.message;
-        rxTableArea.innerHTML="";
-      }finally{setStatus(false);}
+  // زر تنزيل PDF محلي
+  document.getElementById("downloadPDF").onclick = () => {
+    const element = document.getElementById("rxTableArea");
+    const opt = {
+      margin: 10,
+      filename: "prescription.pdf",
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
+    html2pdf().set(opt).from(element).save();
+  };
 
-    function renderTable(meds){
-      let html="<table class='rx-table'><thead><tr>" +
-        "<th>💊 الدواء</th><th>الشكل</th><th>الجرعة</th>" +
-        "<th>التكرار</th><th>المدة</th><th>تعليمات</th><th>الثقة</th>" +
-        "</tr></thead><tbody>";
-      meds.forEach(m=>{
-        let confClass="conf-low";
-        if((m.confidence||"").toLowerCase().includes("high")) confClass="conf-high";
-        else if((m.confidence||"").toLowerCase().includes("moderate")) confClass="conf-moderate";
-        html+=`<tr>
-          <td><strong>${escapeHtml(m.name||"")}</strong>${m.trade_name?("<div class='muted'>"+escapeHtml(m.trade_name)+"</div>"):""}</td>
-          <td>${escapeHtml(m.form||"")}</td>
-          <td>${escapeHtml(m.dose||"")}</td>
-          <td>${escapeHtml(m.frequency||"")}</td>
-          <td>${escapeHtml(m.duration||"")}</td>
-          <td>${escapeHtml(m.instructions||"")}</td>
-          <td class="${confClass}">${escapeHtml(m.confidence||"")}</td>
-        </tr>`;
-      });
-      html+="</tbody></table>";
-      return html;
+  // زر إرسال للبوت
+  document.getElementById("sendToBot").onclick = async () => {
+    const user = tg.initDataUnsafe?.user;
+    if (!user) {
+      alert("❌ لم أستطع قراءة بيانات المستخدم من تليجرام");
+      return;
     }
 
-    function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-    copyRx.onclick=()=>{navigator.clipboard.writeText(copyRx.dataset.json||"").then(()=>alert("📋 تم النسخ"))};
-    printRx.onclick=()=>{window.print();};
+    // توليد PDF من الجدول
+    const element = document.getElementById("rxTableArea");
+    const opt = {
+      margin: 10,
+      filename: "prescription.pdf",
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    const pdfBlob = await html2pdf().set(opt).from(element).outputPdf("blob");
+    const base64Data = await blobToBase64(pdfBlob);
+
+    // إرسال البيانات للبوت عبر sendData
+    tg.sendData(JSON.stringify({
+      user_id: user.id,
+      username: user.username,
+      pdf: base64Data
+    }));
+
+    alert("📤 تم إرسال الوصفة للبوت");
+  };
+
+  // دالة تحويل Blob -> Base64
+  function blobToBase64(blob) {
+    return new Promise((resolve, _) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(",")[1]);
+      reader.readAsDataURL(blob);
+    });
+  }
   </script>
 </body>
 </html>
