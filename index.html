@@ -2,300 +2,888 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=no">
-  <title>تطبيق طبيبي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة العيادة - بسيط (مع Toast + إحصائيات متقدمة + Excel)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+
+    /* CSS Variables للـThemes (مدمج مع dashboard.html) */
+    :root {
+      --bg-color: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --secondary-text: #666;
+      --border-color: #d1d5db;
+      --primary-blue: #1e88e5;
+      --success-color: #4caf50;
+      --danger-color: #dc3545;
+      --shadow: 0 4px 8px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+      --currency: 'ل.س';
+      --secondary-button-bg: #f1f1f1;
+      --secondary-button-hover: #ddd;
+      --button-bg: #1e88e5;
+      --button-hover: #1565c0;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --secondary-text: #b0b0b0;
+      --border-color: #4b5563;
+      --primary-blue: #0d47a1;
+      --success-color: #388e3c;
+      --danger-color: #dc3545;
+      --shadow: 0 4px 8px rgba(0,0,0,0.3);
+      --secondary-button-bg: #2a2a2a;
+      --secondary-button-hover: #3a3a3a;
+      --button-bg: #0d47a1;
+      --button-hover: #1565c0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
       font-family: 'Tajawal', sans-serif;
-      background: #f5f7fa;
-      color: #333;
+      background: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      transition: background-color 0.3s, color 0.3s;
+      transition: var(--transition);
     }
 
+    a { text-decoration: none; }
+
+    /* الهيدر (مدمج من dashboard.html مع تعديل: زر رجوع) */
     header {
-      background: #1e88e5;
+      background: var(--primary-blue);
       color: #fff;
       padding: 15px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       transition: background-color 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    header .logo { display: flex; flex-direction: column; }
-    header h1 { font-size: 24px; margin: 0; display: flex; align-items: center; gap: 8px; }
-    header small { font-size: 13px; color: #e3f2fd; }
 
-    /* زر الهامبرغر */
-    #menu-btn {
-      font-size: 26px;
-      background: #1565c0;
-      border: none;
+    header .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       color: #fff;
+    }
+
+    header small {
+      font-size: 13px;
+      color: #e3f2fd;
+      margin-top: 2px;
+    }
+
+    /* زر الرجوع (بدلاً من hamburger) */
+    #back-btn {
+      font-size: 26px;
+      background: var(--secondary-button-bg);
+      border: none;
+      color: var(--text-color);
       cursor: pointer;
       border-radius: 8px;
       padding: 6px 10px;
       transition: background 0.3s;
-    }
-    #menu-btn:hover { background: #0d47a1; }
-
-    aside {
-      position: fixed; top: 0; right: -250px; width: 250px; height: 100%; background: #fff;
-      color: #1e88e5; transition: right 0.3s, background-color 0.3s, color 0.3s; padding-top: 60px; z-index: 1000; box-shadow: -2px 0 6px rgba(0,0,0,0.2);
-    }
-    aside.active { right: 0; }
-    aside .profile { text-align:center; margin-bottom:20px; }
-    aside .profile img {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      border: 3px solid #1e88e5;
-      margin-bottom: 10px;
-    }
-    aside .profile h3 { margin: 5px 0; font-size: 18px; color:#333; }
-    aside .profile p { margin: 0; font-size: 14px; color:#666; }
-
-    aside nav ul { list-style: none; padding: 0; margin: 0; }
-    aside nav ul li { margin: 15px 0; }
-    aside nav ul li a { color: #1e88e5; text-decoration: none; font-size: 16px; display: flex; align-items: center; gap: 10px; padding: 8px 20px; transition: 0.2s; }
-    aside nav ul li a:hover { background: #e3f2fd; border-radius: 6px; }
-
-    .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; z-index: 900; }
-    .overlay.active { display: block; }
-
-    main { flex: 1; padding: 20px; }
-    .card { background: #fff; padding: 20px; margin: 20px auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 600px; text-align:center; transition: background-color 0.3s, box-shadow 0.3s; }
-    #typing-text { font-size: 22px; font-weight: bold; color: #1e88e5; animation: fade 1s ease; transition: color 0.3s; }
-    @keyframes fade { from {opacity: 0;} to {opacity: 1;} }
-
-    .btn { display: block; width:100%; margin: 10px 0; padding: 12px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; font-weight: bold; text-align:center; transition: background-color 0.3s; }
-    .btn-green { background:#4caf50; color:#fff; }
-    .btn-green:hover { background:#388e3c; }
-    .btn-primary { background:#1e88e5; color:#fff; }
-    .btn-primary:hover { background:#1565c0; }
-    .btn-secondary { background:#f1f1f1; color:#333; transition: background-color 0.3s, color 0.3s; }
-    .btn-secondary:hover { background:#ddd; }
-
-    /* Modal */
-    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:2000; }
-    .modal-content { background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px; text-align:center; animation: fadeIn 0.3s ease; transition: background-color 0.3s; }
-    .modal-content h3 { margin-bottom: 20px; color:#1e88e5; transition: color 0.3s; }
-    .modal button { margin:10px 0; }
-    @keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }
-
-    footer { text-align: center; padding: 15px; background: #1e88e5; color: #fff; font-size: 14px; transition: background-color 0.3s; }
-
-    /* تنسيق سطح المكتب */
-    @media (min-width: 768px) {
-      #menu-btn { display: block; }   /* زر القائمة يظل ظاهر */
-      .overlay { display: none; }     /* لا داعي للطبقة الشفافة إلا عند الفتح */
-    }
-
-    /* مربعات التاريخ والعد */
-    .info-boxes {
       display: flex;
-      justify-content: space-around;
-      gap: 20px;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      font-weight: bold;
+    }
+
+    #back-btn:hover { 
+      background: var(--secondary-button-hover);
+    }
+
+    /* الفوتر (مدمج من dashboard.html) */
+    footer {
       text-align: center;
-    }
-    .info-boxes div {
-      flex: 1;
-      background: #f9f9f9;
       padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      transition: background-color 0.3s, box-shadow 0.3s;
+      background: var(--primary-blue);
+      color: #fff;
+      font-size: 14px;
+      transition: background-color 0.3s;
+      margin-top: auto; /* لدفع الفوتر للأسفل */
     }
-    .info-boxes h4 { margin-bottom: 10px; color:#1e88e5; transition: color 0.3s; }
 
-    /* الوضع المظلم التلقائي */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background: #121212;
-        color: #e0e0e0;
-      }
+    .container {
+      flex: 1;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
 
-      header {
-        background: #0d47a1;
-      }
+    .tabs { 
+      display: flex; 
+      background: var(--card-bg); 
+      border-radius: 10px; 
+      padding: 0; 
+      margin-bottom: 2rem; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+      overflow: hidden; 
+      flex-wrap: wrap; 
+    }
+    .tab-btn { 
+      flex: 1; 
+      min-width: 150px;  
+      padding: 1rem; 
+      background: none; 
+      border: none; 
+      color: var(--secondary-text); 
+      cursor: pointer; 
+      transition: var(--transition); 
+      font-size: 0.9rem;  
+    }
+    .tab-btn.active { background: var(--primary-blue); color: #fff; }
+    .tab-content { display: none; background: var(--card-bg); border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    .tab-content.active { display: block; }
 
-      aside {
-        background: #1e1e1e;
-        color: #90caf9;
-        box-shadow: -2px 0 6px rgba(255,255,255,0.1);
-      }
+    .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label { font-weight: 500; color: var(--text-color); }
+    .form-group input, .form-group select, .form-group textarea { 
+      padding: 0.75rem; 
+      border: 1px solid var(--border-color); 
+      border-radius: 5px; 
+      background: var(--card-bg); 
+      color: var(--text-color); 
+      font-family: inherit; 
+      transition: var(--transition); 
+      font-size: 1rem;  
+    }
+    [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea { background: #2a2a2a; border-color: var(--border-color); }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(30,136,229,0.25); }
 
-      aside .profile h3 {
-        color: #e0e0e0;
-      }
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: var(--transition); margin: 0.25rem; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary { background: var(--button-bg); color: #fff; }
+    .btn-success { background: var(--success-color); color: #fff; }
+    .btn-danger { background: var(--danger-color); color: #fff; }
+    .btn-secondary { background: var(--secondary-button-bg); color: var(--text-color); }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
 
-      aside .profile p {
-        color: #b0b0b0;
-      }
+    /* جدول responsive */
+    .table-container { overflow-x: auto; margin-top: 1rem; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    table { width: 100%; min-width: 600px; border-collapse: collapse; }
+    th, td { padding: 0.75rem; text-align: right; border-bottom: 1px solid var(--border-color); }
+    th { background: var(--primary-blue); color: #fff; font-weight: 600; position: sticky; left: 0; }
+    tr:hover { background: rgba(30,136,229,0.05); }
 
-      aside nav ul li a {
-        color: #90caf9;
-      }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card-bg); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+    .stat-number { font-size: 2rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem; }
+    .stat-label { color: var(--secondary-text); font-size: 0.9rem; }
 
-      aside nav ul li a:hover {
-        background: #2a2a2a;
-      }
+    /* إحصائيات متقدمة: فلاتر التاريخ */
+    .stats-filters { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; align-items: center; }
+    .stats-filters .form-group { flex: 1; min-width: 150px; }
+    .stats-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .stats-buttons .btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
 
-      .card {
-        background: #1e1e1e;
-        box-shadow: 0 2px 8px rgba(255,255,255,0.05);
-      }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
+    .modal-content { background: var(--card-bg); padding: 1.5rem; border-radius: 10px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; color: var(--text-color); }
+    .close { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 1.5rem; cursor: pointer; color: var(--secondary-text); transition: var(--transition); }
+    .close:hover { color: var(--danger-color); transform: scale(1.1); }
 
-      #typing-text {
-        color: #90caf9;
-      }
+    .modal-buttons { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
 
-      .btn-secondary {
-        background: #2a2a2a;
-        color: #e0e0e0;
-      }
+    .search-input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 5px; background: var(--card-bg); color: var(--text-color); font-size: 1rem; }
 
-      .btn-secondary:hover {
-        background: #3a3a3a;
-      }
+    /* Toast notifications */
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; max-width: 400px; }
+    .toast { padding: 1rem; border-radius: 5px; color: white; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-100%); opacity: 0; transition: var(--transition); display: flex; align-items: center; gap: 0.5rem; min-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success-color); }
+    .toast.error { background: var(--danger-color); }
+    .toast.info { background: var(--primary-blue); }
 
-      .modal-content {
-        background: #1e1e1e;
-      }
+    /* Excel Import/Export Buttons */
+    .excel-buttons { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .excel-buttons .btn { padding: 0.6rem 1.2rem; }
 
-      .modal-content h3 {
-        color: #90caf9;
-      }
+    /* Responsive */
+    @media (max-width: 768px) {
+      header { padding: 10px 15px; }
+      header h1 { font-size: 20px; }
+      #back-btn { font-size: 18px; padding: 8px 12px; }
+      .container { padding: 0 0.5rem; margin: 1rem auto; }
+      .tabs { flex-direction: column; min-width: 100%; }
+      .tab-btn { flex: none; min-width: 100%; padding: 0.8rem; font-size: 1rem; }
+      .tab-content { padding: 1rem; margin-bottom: 1rem; }
+      .form-group input, .form-group select, .form-group textarea { font-size: 1rem; padding: 0.5rem; }
+      .btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+      .stats-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+      .stat-card { padding: 1rem; }
+      .stat-number { font-size: 1.5rem; }
+      .table-container { margin-top: 0.5rem; }
+      th, td { padding: 0.5rem; font-size: 0.8rem; }
+      .modal-content { padding: 1rem; max-height: 95vh; width: 95%; }
+      .close { font-size: 1.8rem; top: 0.3rem; left: 0.3rem; }
+      .modal-buttons { flex-direction: column; gap: 0.5rem; }
+      table { min-width: 450px; }
+      .stats-filters { flex-direction: column; align-items: stretch; }
+      .stats-buttons { justify-content: center; }
+      .excel-buttons { flex-direction: column; width: 100%; }
+      #toast-container { left: 10px; right: 10px; max-width: none; }
+      .toast { min-width: auto; }
+      footer { padding: 10px; font-size: 12px; }
+    }
 
-      footer {
-        background: #0d47a1;
-      }
+    @media (max-width: 480px) {
+      .table-container { border-radius: 0; }
+      .stats-buttons { flex-direction: column; width: 100%; }
+    }
 
-      .info-boxes div {
-        background: #2a2a2a;
-        box-shadow: 0 2px 6px rgba(255,255,255,0.05);
-      }
+    /* Dark Mode تحسينات (مدمج من dashboard.html) */
+    [data-theme="dark"] input,
+    [data-theme="dark"] select,
+    [data-theme="dark"] textarea {
+      background: var(--card-bg) !important;
+      color: var(--text-color) !important;
+      border-color: var(--border-color) !important;
+    }
 
-      .info-boxes h4 {
-        color: #90caf9;
-      }
+    [data-theme="dark"] input::placeholder,
+    [data-theme="dark"] textarea::placeholder {
+      color: var(--secondary-text) !important;
+    }
+
+    [data-theme="dark"] input::-webkit-input-placeholder,
+    [data-theme="dark"] textarea::-webkit-input-placeholder {
+      color: var(--secondary-text) !important;
+    }
+
+    [data-theme="dark"] input:-ms-input-placeholder,
+    [data-theme="dark"] textarea:-ms-input-placeholder {
+      color: var(--secondary-text) !important;
+    }
+
+    [data-theme="dark"] input[readonly],
+    [data-theme="dark"] input[readonly="readonly"] {
+      background: var(--card-bg) !important;
+      color: var(--text-color) !important;
+    }
+
+    [data-theme="dark"] #back-btn {
+      background: var(--secondary-button-bg);
+      color: var(--text-color);
+    }
+
+    [data-theme="dark"] #back-btn:hover {
+      background: var(--secondary-button-hover);
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
 
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- الهيدر (مدمج ومعدل من dashboard.html) -->
   <header>
     <div class="logo">
       <h1><i class="fas fa-stethoscope"></i> طبيبي</h1>
-      <small>أول تطبيق ذكاء اصطناعي طبي بسوريا</small>
+      <small>أول تطبيق ذكاء اصطناعي طبي في سوريا</small>
     </div>
-    <button id="menu-btn"><i class="fas fa-bars"></i></button>
+    <button id="back-btn">
+      <i class="fas fa-arrow-left"></i> رجوع
+    </button>
   </header>
 
-  <aside id="sidebar">
-    <div class="profile">
-      <img src="https://i.pravatar.cc/150" alt="profile">
-      <h3>د. أحمد</h3>
-      <p>اختصاصي باطنة</p>
+  <div class="container">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('patients')"><i class="fas fa-user-injured"></i> المرضى (مع مبلغ)</button>
+      <button class="tab-btn" onclick="switchTab('visits')"><i class="fas fa-notes-medical"></i> الزيارات (مع نوع + توقيت)</button>
+      <button class="tab-btn" onclick="switchTab('stats')"><i class="fas fa-chart-bar"></i> الإحصائيات (متقدمة)</button>
     </div>
-    <nav>
-      <ul>
-        <li><a href="#"><i class="fas fa-user-md"></i> القصة السريرية</a></li>
-        <li><a href="#"><i class="fas fa-x-ray"></i> تحليل الصور الشعاعية و التقارير الطبية</a></li>
-        <li><a href="#"><i class="fas fa-notes-medical"></i> المحفوظة</a></li>
-        <li><a href="#"><i class="fas fa-pills"></i> الوصفات</a></li>
-        <li><a href="#"><i class="fas fa-virus"></i> الأمراض</a></li>
-        <li><a href="#"><i class="fas fa-cog"></i> الإعدادات</a></li>
-      </ul>
-    </nav>
-  </aside>
 
-  <div class="overlay" id="overlay"></div>
+    <!-- إحصائيات عامة -->
+    <div class="stats-grid" id="statsGrid"></div>
 
-  <main>
-    <!-- الشريط المتحرك -->
-    <div class="card"><h3 id="typing-text"></h3></div>
-
-    <!-- مربعات التاريخ والعد -->
-    <div class="card info-boxes">
-      <div>
-        <h4>📅 تاريخ اليوم</h4>
-        <p id="today-date"></p>
+    <!-- تبويب المرضى -->
+    <div id="patients" class="tab-content active">
+      <div class="form-group">
+        <input type="text" id="patientSearch" class="search-input" placeholder="ابحث في المرضى..." oninput="filterTable('patientSearch', 'patientsTable')">
       </div>
-      <div>
-        <h4>📖 عدد القصص</h4>
-        <p id="story-count">0</p>
+      <div class="excel-buttons">
+        <button class="btn btn-primary" onclick="exportToExcel('patients')"><i class="fas fa-file-export"></i> تصدير إلى Excel</button>
+        <label for="importFilePatients" class="btn btn-success" style="cursor: pointer;"><i class="fas fa-file-import"></i> استيراد من Excel</label>
+        <input type="file" id="importFilePatients" accept=".xlsx,.xls" style="display: none;" onchange="importFromExcel('patients', this.files[0])">
+      </div>
+      <button class="btn btn-success" onclick="showModal('patients')"><i class="fas fa-plus"></i> إضافة مريض جديد</button>
+      <div class="table-container">
+        <table id="patientsTable">
+          <thead><tr><th>الاسم</th><th>العمر</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>المبلغ <small>(ل.س)</small></th><th>ملاحظات</th><th>العمليات</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- الأزرار تحت بعض -->
-    <div class="card">
-      <button class="btn btn-green" id="addStoryBtn">➕ إضافة قصة سريرية جديدة</button>
-      <button class="btn btn-secondary">⬇️ تحميل قصة سريرية</button>
+    <!-- تبويب الزيارات -->
+    <div id="visits" class="tab-content">
+      <div class="form-group">
+        <input type="text" id="visitSearch" class="search-input" placeholder="ابحث في الزيارات..." oninput="filterTable('visitSearch', 'visitsTable')">
+      </div>
+      <div class="excel-buttons">
+        <button class="btn btn-primary" onclick="exportToExcel('visits')"><i class="fas fa-file-export"></i> تصدير إلى Excel</button>
+        <label for="importFileVisits" class="btn btn-success" style="cursor: pointer;"><i class="fas fa-file-import"></i> استيراد من Excel</label>
+        <input type="file" id="importFileVisits" accept=".xlsx,.xls" style="display: none;" onchange="importFromExcel('visits', this.files[0])">
+      </div>
+      <button class="btn btn-success" onclick="showModal('visits')"><i class="fas fa-plus"></i> تسجيل زيارة جديدة</button>
+      <div class="table-container">
+        <table id="visitsTable">
+          <thead><tr><th>تاريخ الزيارة</th><th>اسم المريض</th><th>نوع الزيارة</th><th>التوقيت</th><th>ملاحظات</th><th>العمليات</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-  </main>
 
-  <!-- Modal -->
-  <div class="modal" id="storyModal">
-    <div class="modal-content">
-      <h3>لمن القصة؟</h3>
-      <button class="btn btn-primary"><i class="fas fa-user-md"></i> داخلية عامة / جراحة</button>
-      <button class="btn btn-primary"><i class="fas fa-baby"></i> أطفال</button>
-      <button class="btn btn-primary"><i class="fas fa-female"></i> نسائية</button>
-      <button class="btn btn-secondary" id="closeModal">إلغاء</button>
+    <!-- تبويب الإحصائيات المتقدمة -->
+    <div id="stats" class="tab-content">
+      <h2><i class="fas fa-chart-bar"></i> الإحصائيات المتقدمة</h2>
+      <div class="stats-filters">
+        <div class="form-group">
+          <label>من تاريخ</label>
+          <input type="date" id="statsFromDate" value="">
+        </div>
+        <div class="form-group">
+          <label>إلى تاريخ</label>
+          <input type="date" id="statsToDate" value="">
+        </div>
+        <button class="btn btn-primary" onclick="loadStats()"><i class="fas fa-calculator"></i> حساب</button>
+      </div>
+      <div class="stats-buttons">
+        <button class="btn btn-secondary" onclick="setDateRange('today')"><i class="fas fa-calendar-day"></i> اليوم</button>
+        <button class="btn btn-secondary" onclick="setDateRange('month')"><i class="fas fa-calendar-month"></i> الشهر</button>
+        <button class="btn btn-secondary" onclick="setDateRange('year')"><i class="fas fa-calendar-year"></i> السنة</button>
+        <button class="btn btn-secondary" onclick="setDateRange('all')"><i class="fas fa-infinity"></i> كل البيانات</button>
+      </div>
+      <p id="statsMessage">جاري الحساب...</p>
+      <button class="btn btn-danger" onclick="clearAllData()" style="margin-top: 1rem;"><i class="fas fa-trash"></i> مسح جميع البيانات</button>
+    </div>
+
+    <!-- Modal عام -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">إضافة جديد</h2>
+        <form id="modalForm" style="margin-top: 2rem;">
+          <!-- الحقول هنا -->
+        </form>
+      </div>
     </div>
   </div>
 
+  <!-- الفوتر (مدمج من dashboard.html) -->
   <footer>© جميع الحقوق محفوظة لـ Kasp-ai</footer>
 
   <script>
-    const menuBtn = document.getElementById("menu-btn");
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    const modal = document.getElementById("storyModal");
-    const addStoryBtn = document.getElementById("addStoryBtn");
-    const closeModal = document.getElementById("closeModal");
+    // معالج زر الرجوع (جديد: يعود إلى الصفحة السابقة أو dashboard.html)
+    document.addEventListener('DOMContentLoaded', () => {
+      const backBtn = document.getElementById('back-btn');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => {
+          if (window.history.length > 1) {
+            window.history.back(); // إذا كان هناك تاريخ، ارجع للخلف
+          } else {
+            window.location.href = 'dashboard.html'; // إلا، اذهب إلى dashboard
+          }
+        });
+      }
 
-    menuBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("active");
-      overlay.classList.toggle("active");
+      // Set default dates for stats (اليوم)
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('statsFromDate').value = today;
+      document.getElementById('statsToDate').value = today;
+      loadTable('patients');
+      loadStats();  // يحسب اليوم افتراضياً
     });
-    overlay.addEventListener("click", () => {
-      sidebar.classList.remove("active");
-      overlay.classList.remove("active");
-    });
 
-    // Modal events
-    addStoryBtn.addEventListener("click", () => { modal.style.display = "flex"; });
-    closeModal.addEventListener("click", () => { modal.style.display = "none"; });
-    window.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
+    let currentData = {
+      patients: loadData('patients') || [],
+      visits: loadData('visits') || []
+    };
+    let currentEditId = null;
+    let currentTab = 'patients';
+    const currency = 'ل.س';
 
-    // النصوص المتحركة
-    const texts = [
-      "مرحباً بك في قسم القصة السريرية في تطبيق طبيبي",
-      "هنا يمكنك أخذ القصة السريرية بكل احترافية",
-      "وتحليلها باستخدام أحدث تقنيات الذكاء الصنعي"
-    ];
-    let textIndex = 0;
-    const typingElement = document.getElementById("typing-text");
-    function showText() { typingElement.innerHTML = texts[textIndex]; textIndex = (textIndex + 1) % texts.length; }
-    showText();
-    setInterval(showText, 3000);
+    // Toast function
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
+      container.appendChild(toast);
+      
+      // Show
+      setTimeout(() => toast.classList.add('show'), 100);
+      
+      // Hide after 3s
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
 
-    // عرض تاريخ اليوم
-    const todayDate = document.getElementById("today-date");
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    todayDate.textContent = new Date().toLocaleDateString('ar-EG', options);
+    // localStorage functions
+    function loadData(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key)) || [];
+      } catch (e) {
+        console.error('خطأ في تحميل ' + key + ':', e);
+        return [];
+      }
+    }
 
-    // عدّ القصص السريرية
-    let storyCount = 0;
-    const storyCountElement = document.getElementById("story-count");
-    addStoryBtn.addEventListener("click", () => {
-      storyCount++;
-      storyCountElement.textContent = storyCount;
+    function saveData(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+        console.log('تم الحفظ ' + key + ': ' + data.length + ' عنصر');
+      } catch (e) {
+        showToast('خطأ في الحفظ: ' + e.message, 'error');
+      }
+    }
+
+    // Excel Export Function
+    function exportToExcel(tab) {
+      if (currentData[tab].length === 0) {
+        showToast('لا توجد بيانات للتصدير!', 'info');
+        return;
+      }
+
+      let dataArray = [];
+      if (tab === 'patients') {
+        dataArray = currentData.patients.map(p => ({
+          'الاسم': p.name || '',
+          'العمر': p.age || '',
+          'الهاتف': p.phone || '',
+          'تاريخ التسجيل': p.registrationDate || '',
+          'المبلغ': (p.amount || 0).toFixed(0) + ' ' + currency,
+          'ملاحظات': p.notes || ''
+        }));
+      } else if (tab === 'visits') {
+        dataArray = currentData.visits.map(v => ({
+          'تاريخ الزيارة': v.visitDate || '',
+          'اسم المريض': v.patientName || '',
+          'نوع الزيارة': v.visitType || '',
+          'التوقيت': v.timing || '',
+          'ملاحظات': v.additionalNotes || ''
+        }));
+      }
+
+      const ws = XLSX.utils.json_to_sheet(dataArray);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, tab.charAt(0).toUpperCase() + tab.slice(1));
+      XLSX.writeFile(wb, `${tab}_data.xlsx`);
+      showToast(`تم تصدير بيانات ${tab} إلى Excel بنجاح!`, 'success');
+    }
+
+    // Excel Import Function
+    function importFromExcel(tab, file) {
+      if (!file) {
+        showToast('يرجى اختيار ملف Excel صالح!', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          let importedData = [];
+          if (tab === 'patients') {
+            importedData = jsonData.map(row => ({
+              id: Date.now() + Math.random().toString(), // ID فريد
+              name: row['الاسم'] || '',
+              age: row['العمر'] || '',
+              phone: row['الهاتف'] || '',
+              registrationDate: row['تاريخ التسجيل'] || '',
+              amount: parseFloat(row['المبلغ']?.toString().replace(/[^0-9.]/g, '') || 0),
+              notes: row['ملاحظات'] || ''
+            })).filter(p => p.name && p.phone); // فلترة البيانات غير الكاملة
+          } else if (tab === 'visits') {
+            importedData = jsonData.map(row => ({
+              id: Date.now() + Math.random().toString(), // ID فريد
+              visitDate: row['تاريخ الزيارة'] || '',
+              patientName: row['اسم المريض'] || '',
+              visitType: row['نوع الزيارة'] || 'مراجعة',
+              timing: row['التوقيت'] || '',
+              additionalNotes: row['ملاحظات'] || ''
+            })).filter(v => v.patientName && v.visitDate); // فلترة البيانات غير الكاملة
+          }
+
+          if (importedData.length === 0) {
+            showToast('لم يتم العثور على بيانات صالحة في الملف!', 'error');
+            return;
+          }
+
+          // إضافة أو دمج مع البيانات الحالية (هنا: إضافة فقط، يمكن تعديل للاستبدال)
+          currentData[tab] = [...currentData[tab], ...importedData];
+          saveData(tab, currentData[tab]);
+          loadTable(tab);
+          showToast(`تم استيراد ${importedData.length} عنصر من Excel بنجاح!`, 'success');
+          if (file) document.getElementById(`importFile${tab.charAt(0).toUpperCase() + tab.slice(1)}`).value = ''; // مسح الملف
+        } catch (err) {
+          showToast('خطأ في قراءة الملف: ' + err.message, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Switch tabs (مُصحح: استخدم this بدلاً من event.target لتجنب الخطأ)
+    function switchTab(tab) {
+      // إزالة active من جميع الأزرار
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      // إضافة active للزر الحالي (this متاح في onclick)
+      this.classList.add('active');
+      // إخفاء جميع المحتويات
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      // إظهار المحتوى المطلوب
+      document.getElementById(tab).classList.add('active');
+      currentTab = tab;
+      loadTable(tab);
+      if (tab === 'stats') loadStats();
+    }
+
+    // Load table
+    function loadTable(tab) {
+      const tbody = document.querySelector(`#${tab}Table tbody`);
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const data = currentData[tab] || [];
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = getTableRow(item, tab);
+        tbody.appendChild(row);
+      });
+    }
+
+    // Get table row
+    function getTableRow(item, tab) {
+      let row = '';
+      if (tab === 'patients') {
+        row = `
+          <td>${item.name || ''}</td>
+          <td>${item.age || ''}</td>
+          <td>${item.phone || ''}</td>
+          <td>${item.registrationDate || ''}</td>
+          <td>${(item.amount || 0).toFixed(0)} ${currency}</td>
+          <td>${item.notes || ''}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="editItem('${item.id}', '${tab}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}', '${tab}')"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+      } else if (tab === 'visits') {
+        row = `
+          <td>${item.visitDate || ''}</td>
+          <td>${item.patientName || ''}</td>
+          <td>${item.visitType || ''}</td>
+          <td>${item.timing || ''}</td>
+          <td>${item.additionalNotes || ''}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="editItem('${item.id}', '${tab}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}', '${tab}')"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+      }
+      return row;
+    }
+
+    // Show modal
+    function showModal(tabType) {
+      const modal = document.getElementById('modal');
+      const form = document.getElementById('modalForm');
+      const title = document.getElementById('modalTitle');
+      form.innerHTML = '';  
+      currentEditId = null;
+      const today = new Date().toISOString().split('T')[0];
+
+      if (tabType === 'patients') {
+        title.textContent = currentEditId ? 'تحرير المريض' : 'إضافة مريض جديد';
+        form.innerHTML = `
+          <div class="form-group"><label>اسم المريض *</label><input type="text" id="name" required></div>
+          <div class="form-group"><label>العمر *</label><input type="number" id="age" min="1" max="120" required></div>
+          <div class="form-group"><label>رقم الهاتف *</label><input type="tel" id="phone" required></div>
+          <div class="form-group"><label>تاريخ التسجيل *</label><input type="date" id="registrationDate" value="${today}" required></div>
+          <div class="form-group"><label>المبلغ ${currency} *</label><input type="number" id="amount" required></div>
+          <div class="form-group"><label>ملاحظات</label><textarea id="notes" rows="2" placeholder="ملاحظات عن المريض"></textarea></div>
+          <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary">حفظ</button>
+          </div>
+        `;
+        if (currentEditId) {
+          const patient = currentData.patients.find(p => p.id === currentEditId);
+          if (patient) {
+            document.getElementById('name').value = patient.name || '';
+            document.getElementById('age').value = patient.age || '';
+            document.getElementById('phone').value = patient.phone || '';
+            document.getElementById('registrationDate').value = patient.registrationDate || today;
+            document.getElementById('amount').value = patient.amount || 0;
+            document.getElementById('notes').value = patient.notes || '';
+          }
+        }
+        form.onsubmit = savePatient;
+      } else if (tabType === 'visits') {
+        title.textContent = currentEditId ? 'تحرير الزيارة' : 'تسجيل زيارة جديدة';
+        const patientsOptions = '<option value="">اختر المريض</option>' + currentData.patients.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        form.innerHTML = `
+          <div class="form-group"><label>تاريخ الزيارة *</label><input type="date" id="visitDate" value="${today}" required></div>
+          <div class="form-group"><label>اسم المريض *</label><select id="patientName" required>${patientsOptions}</select></div>
+          <div class="form-group"><label>نوع الزيارة *</label><select id="visitType" required><option value="مراجعة">مراجعة</option><option value="معاينة">معاينة</option></select></div>
+          <div class="form-group"><label>التوقيت *</label><input type="time" id="timing" required></div>
+          <div class="form-group"><label>ملاحظات</label><textarea id="additionalNotes" rows="2" placeholder="ملاحظات إضافية"></textarea></div>
+          <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary">حفظ</button>
+          </div>
+        `;
+        if (currentEditId) {
+          const visit = currentData.visits.find(v => v.id === currentEditId);
+          if (visit) {
+            document.getElementById('visitDate').value = visit.visitDate || today;
+            document.getElementById('patientName').value = visit.patientName || '';
+            document.getElementById('visitType').value = visit.visitType || 'مراجعة';
+            document.getElementById('timing').value = visit.timing || '';
+            document.getElementById('additionalNotes').value = visit.additionalNotes || '';
+          }
+        }
+        form.onsubmit = saveVisit;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function editItem(id, tab) {
+      currentEditId = id;
+      currentTab = tab;
+      setTimeout(() => showModal(tab), 10);
+    }
+
+    // Save functions (مع toast بدلاً من alert)
+    function savePatient(e) {
+      e.preventDefault();
+      const id = currentEditId || Date.now().toString();
+      const ageInput = document.getElementById('age');
+      const ageValue = ageInput ? ageInput.value : '';
+      const patient = {
+        id,
+        name: document.getElementById('name').value,
+        age: ageValue,
+        phone: document.getElementById('phone').value,
+        registrationDate: document.getElementById('registrationDate').value,
+        amount: parseFloat(document.getElementById('amount').value) || 0,
+        notes: document.getElementById('notes').value
+      };
+      if (currentEditId) {
+        const index = currentData.patients.findIndex(p => p.id === id);
+        if (index > -1) currentData.patients[index] = patient;
+        showToast('تم تحرير المريض مع المبلغ بنجاح!', 'success');
+      } else {
+        currentData.patients.push(patient);
+        showToast('تم إضافة المريض مع المبلغ بنجاح!', 'success');
+      }
+      saveData('patients', currentData.patients);
+      loadTable('patients');
+      closeModal();
+      loadStats();
+    }
+
+    function saveVisit(e) {
+      e.preventDefault();
+      const id = currentEditId || Date.now().toString();
+      const visitTypeInput = document.getElementById('visitType');
+      const timingInput = document.getElementById('timing');
+      const visitTypeValue = visitTypeInput ? visitTypeInput.value : '';
+      const timingValue = timingInput ? timingInput.value : '';
+      const visit = {
+        id,
+        visitDate: document.getElementById('visitDate').value,
+        patientName: document.getElementById('patientName').value,
+        visitType: visitTypeValue,
+        timing: timingValue,
+        additionalNotes: document.getElementById('additionalNotes').value
+      };
+      if (currentEditId) {
+        const index = currentData.visits.findIndex(v => v.id === id);
+        if (index > -1) currentData.visits[index] = visit;
+        showToast('تم تحرير الزيارة مع النوع والتوقيت بنجاح!', 'success');
+      } else {
+        currentData.visits.push(visit);
+        showToast('تم إضافة الزيارة مع النوع والتوقيت بنجاح!', 'success');
+      }
+      saveData('visits', currentData.visits);
+      loadTable('visits');
+      closeModal();
+      loadStats();
+    }
+
+    // Delete item (مع toast)
+    function deleteItem(id, tab) {
+      if (!confirm('هل أنت متأكد من الحذف؟')) return;
+      if (tab === 'patients') {
+        const patient = currentData.patients.find(p => p.id === id);
+        if (patient) {
+          currentData.visits = currentData.visits.filter(v => v.patientName !== patient.name);
+          saveData('visits', currentData.visits);
+        }
+      }
+      currentData[tab] = currentData[tab].filter(item => item.id !== id);
+      saveData(tab, currentData[tab]);
+      loadTable(tab);
+      loadStats();
+      showToast('تم الحذف بنجاح!', 'success');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+      currentEditId = null;
+    }
+
+    // Filter table
+    function filterTable(searchId, tableId) {
+      const input = document.getElementById(searchId);
+      if (!input) return;
+      const filter = input.value.toLowerCase();
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      const tr = table.getElementsByTagName('tr');
+      for (let i = 1; i < tr.length; i++) {
+        let show = false;
+        for (let j = 0; j < tr[i].cells.length - 1; j++) {
+          if (tr[i].cells[j] && tr[i].cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
+            show = true;
+            break;
+          }
+        }
+        tr[i].style.display = show ? '' : 'none';
+      }
+    }
+
+    // Set date range for stats (للأزرار السريعة)
+    function setDateRange(range) {
+      const today = new Date();
+      const fromInput = document.getElementById('statsFromDate');
+      const toInput = document.getElementById('statsToDate');
+      let fromDate, toDate;
+
+      switch (range) {
+        case 'today':
+          fromDate = toDate = today.toISOString().split('T')[0];
+          break;
+        case 'month':
+          fromDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+          toDate = today.toISOString().split('T')[0];
+          break;
+        case 'year':
+          fromDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+          toDate = today.toISOString().split('T')[0];
+          break;
+        case 'all':
+          fromDate = toDate = '';  // كل البيانات
+          break;
+      }
+
+      fromInput.value = fromDate;
+      toInput.value = toDate;
+      loadStats();
+    }
+
+    // Load advanced stats (مع فلترة بناءً على الفترة)
+    function loadStats() {
+      const fromDate = document.getElementById('statsFromDate').value;
+      const toDate = document.getElementById('statsToDate').value;
+      const message = document.getElementById('statsMessage');
+      let periodText = 'كل البيانات';
+      if (fromDate && toDate) {
+        periodText = `من ${fromDate} إلى ${toDate}`;
+      } else if (fromDate) {
+        periodText = `من ${fromDate} فصاعداً`;
+      } else if (toDate) {
+        periodText = `حتى ${toDate}`;
+      }
+
+      // فلترة البيانات
+      const filterPatients = (fromDate && toDate) 
+        ? currentData.patients.filter(p => p.registrationDate >= fromDate && p.registrationDate <= toDate)
+        : fromDate 
+          ? currentData.patients.filter(p => p.registrationDate >= fromDate)
+          : toDate 
+            ? currentData.patients.filter(p => p.registrationDate <= toDate)
+            : currentData.patients;
+
+      const filterVisits = (fromDate && toDate) 
+        ? currentData.visits.filter(v => v.visitDate >= fromDate && v.visitDate <= toDate)
+        : fromDate 
+          ? currentData.visits.filter(v => v.visitDate >= fromDate)
+          : toDate 
+            ? currentData.visits.filter(v => v.visitDate <= toDate)
+            : currentData.visits;
+
+      const totalPatients = filterPatients.length;
+      const totalVisits = filterVisits.length;
+      const totalAmount = filterPatients.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+      const statsGrid = document.getElementById('statsGrid');
+      statsGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${totalPatients}</div>
+          <div class="stat-label"><i class="fas fa-user-injured"></i> إجمالي المرضى ${periodText}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${totalVisits}</div>
+          <div class="stat-label"><i class="fas fa-notes-medical"></i> إجمالي الزيارات ${periodText}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--success-color);">${totalAmount.toFixed(0)} ${currency}</div>
+          <div class="stat-label"><i class="fas fa-money-bill-wave"></i> إجمالي المبالغ ${periodText}</div>
+        </div>
+      `;
+      if (message) message.textContent = `الإحصائيات للفترة: ${periodText} | ${totalPatients} مريض، ${totalVisits} زيارة، ${totalAmount.toFixed(0)} ${currency}.`;
+      showToast(`تم حساب الإحصائيات لـ ${periodText} بنجاح!`, 'info');
+    }
+
+    // Clear all (مع toast)
+    function clearAllData() {
+      if (!confirm('هل أنت متأكد من مسح جميع البيانات؟')) return;
+      localStorage.clear();
+      currentData = { patients: [], visits: [] };
+      loadTable(currentTab);
+      loadStats();
+      showToast('تم مسح جميع البيانات بنجاح!', 'success');
+    }
+
+    // Dark mode
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
   </script>
 </body>
